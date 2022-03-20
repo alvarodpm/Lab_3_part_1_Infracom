@@ -15,7 +15,8 @@ sock.listen(1)
 
 ThreadCount = 0
 
-def threaded_client(connection, ThreadCount):
+def threaded_client(connection):
+    global ThreadCount
     connection.send(str.encode('Welcome to the Server'))
     try:
         print('client connected:', client_address)
@@ -28,7 +29,6 @@ def threaded_client(connection, ThreadCount):
                 break
         print("sent everything to", client_address)
     except:
-        ThreadCount -= 1
         connection.close()
     finally:
         ThreadCount -= 1
@@ -39,7 +39,7 @@ while True:
     connection, client_address = sock.accept()
     
     print('Connected to: ' + client_address[0] + ':' + str(client_address[1]))
-    start_new_thread(threaded_client, (connection, ThreadCount))
+    start_new_thread(threaded_client, (connection, ))
     ThreadCount += 1
     print('Thread Number: ' + str(ThreadCount))
     
