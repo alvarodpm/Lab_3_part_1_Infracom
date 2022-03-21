@@ -1,11 +1,9 @@
+from email import message
 import socket
 import sys
 from _thread import *
 import os
-import threading 
 
-archivo = int(input('Seleccione el tamaño del archivo. 1 para 250Mb, 2 para 100Mb: ').rstrip())
-NumClientes = int(input('Seleccione el número de clientes que a los que desea enviar el archivo. Máximo 24: ').rstrip())
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -18,41 +16,38 @@ sock.listen(1)
 
 ThreadCount = 0
 
+archivo = int(input('Seleccione el tamaño del archivo. 1 para 250Mb, 2 para 100Mb: ').rstrip())
+
+
 def threaded_client(connection):
     global ThreadCount
     connection.send(str.encode('Welcome to the Server'))
-    print ("Entraa uwu")
     try:
-        with open("file2", "rb") as f:
-            message = f.read()
-            print('sending message')
-            sock.sendall(message)
-            print("finished sending")
-            #amount_received = 0
-            #amount_expected = len(message)
-            #while amount_received < amount_expected:
-            #data = sock.recv(16384)
-            #amount_received += len(data)
-            #print('received: ' + str(amount_received) + ' expected: ' + str(amount_expected))
-        #print("received everything")
+        print('client connected:', client_address)
+        with open("file" + str(archivo), "rb") as f:
+            data = f.read()
+        while True:
+            #data = connection.recv(16384)
+            #print('received "%s"' % data)
+            if data:
+                connection.sendall(data)
+            else:
+                break
+        print("sent everything to", client_address)
     except:
         connection.close()
     finally:
         ThreadCount -= 1
+        print('Threads faltantes: ' + str(ThreadCount))
         connection.close()
 
-list_threads=[]
-while ThreadCount<NumClientes:
+while True:
     print('waiting for a connection')
     connection, client_address = sock.accept()
-    print('Se recibe la solicutud de conexión de: ' + client_address[0] + ':' + str(client_address[1]))
-    list_threads.append((client_address,connection))
+    
+    print('Connected to: ' + client_address[0] + ':' + str(client_address[1]))
+    start_new_thread(threaded_client, (connection, ))
     ThreadCount += 1
     print('Thread Number: ' + str(ThreadCount))
     
-for i in list_threads:
-    client_address=i[0]
-    connection=i[1]
-    print("se inicia el thread del puerto ", client_address[1])
-    start_new_thread(threaded_client, (connection, client_address ))
 sock.close()
