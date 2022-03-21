@@ -1,14 +1,11 @@
-from datetime import datetime
-from email.utils import format_datetime
 import socket
 import sys
 from _thread import *
-from sympy import false, true
+import os
+import threading 
 
-# Create log file
-#formated_datetime = datetime.strftime('%Y-%m-%d-%H-%M-%S')
-
-
+archivo = int(input('Seleccione el tamaño del archivo. 1 para 250Mb, 2 para 100Mb: ').rstrip())
+NumClientes = int(input('Seleccione el número de clientes que a los que desea enviar el archivo. Máximo 24: ').rstrip())
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -21,35 +18,41 @@ sock.listen(1)
 
 ThreadCount = 0
 
-def threaded_client(connection, client_address):
+def threaded_client(connection):
     global ThreadCount
     connection.send(str.encode('Welcome to the Server'))
+    print ("Entraa uwu")
     try:
-        print('client connected: ', client_address)
-        data = connection.recv(16384)
-        if data:
-            print('FFFFFF')
-            connection.sendall(data)
-        else:
-            while True:
-                if 'termino' == connection.recv(16384):
-                    print("sent everything to ", client_address)
-                    break
+        with open("file2", "rb") as f:
+            message = f.read()
+            print('sending message')
+            sock.sendall(message)
+            print("finished sending")
+            #amount_received = 0
+            #amount_expected = len(message)
+            #while amount_received < amount_expected:
+            #data = sock.recv(16384)
+            #amount_received += len(data)
+            #print('received: ' + str(amount_received) + ' expected: ' + str(amount_expected))
+        #print("received everything")
     except:
         connection.close()
     finally:
         ThreadCount -= 1
-        print('Thread finished. ' + str(ThreadCount) + ' threads restantes')
         connection.close()
 
-
-while True:
+list_threads=[]
+while ThreadCount<NumClientes:
     print('waiting for a connection')
     connection, client_address = sock.accept()
-    
-    print('Connected to: ' + client_address[0] + ':' + str(client_address[1]))
-    start_new_thread(threaded_client, (connection, client_address))
+    print('Se recibe la solicutud de conexión de: ' + client_address[0] + ':' + str(client_address[1]))
+    list_threads.append((client_address,connection))
     ThreadCount += 1
     print('Thread Number: ' + str(ThreadCount))
     
+for i in list_threads:
+    client_address=i[0]
+    connection=i[1]
+    print("se inicia el thread del puerto ", client_address[1])
+    start_new_thread(threaded_client, (connection, client_address ))
 sock.close()
