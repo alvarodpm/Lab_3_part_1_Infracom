@@ -10,19 +10,23 @@ print('connecting to %s port %s' % server_address)
 sock.connect(server_address)
 
 try:
+
     with open("file2", "rb") as f:
-        message = f.read()       
+        message = f.read()
+    
+        #message = 'This is the message.  It will be repeated.'.encode()
+        #print('sending "%s"' % message)
+        #print('sending message')
+
+        #print("finished sending")
+        #sock.sendall(message)
+    
         amount_received = 0
         amount_expected = len(message)
         while amount_received < amount_expected:
-            print("ta pasando")
-            data = sock.recv(4096)
-            print (data, "--------------------")
+            data = sock.recv(16384)
             amount_received += len(data)
-            print('received: ' + str(amount_received) + ' expected: ' + str(amount_expected))
-        sock.send('termino')
+            #print('received "%s"' % data)
         print("received everything")
-except:
-    print("Error inesperado :c")
 finally:
     sock.close()
