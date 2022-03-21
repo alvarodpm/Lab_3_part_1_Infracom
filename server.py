@@ -1,8 +1,27 @@
+from datetime import datetime
 from email import message
+import logging
 import socket
 import sys
 from _thread import *
 import os
+import logging
+import time
+
+archivo = int(input('Seleccione el tamaño del archivo. 1 para 250Mb, 2 para 100Mb: ').rstrip())
+peso = ''
+if(archivo == 1):
+    peso = '250MB'
+elif(archivo == 2):
+    peso = '100MB'
+
+formated_date_time = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+logging.basicConfig(filename='Logs/'+formated_date_time+'-log.txt', filemode='w', format='%(asctime)s - %(levelname)s - %(message)s')
+log = logging.getLogger('Logs/'+str(formated_date_time)+'-log')
+log.setLevel(logging.DEBUG)
+log.debug('Archivo: file' + str(archivo))
+log.debug('Peso del archivo: ' + peso)
+
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -16,31 +35,27 @@ sock.listen(1)
 
 ThreadCount = 0
 
-archivo = int(input('Seleccione el tamaño del archivo. 1 para 250Mb, 2 para 100Mb: ').rstrip())
-
-
 def threaded_client(connection):
     global ThreadCount
+    tiempoInicio = time.time()
     connection.send(str.encode('Welcome to the Server'))
     try:
         print('client connected:', client_address)
-        with open("file" + str(archivo), "rb") as f:
+        with open("file2" , "rb") as f:
             data = f.read()
         while True:
-            #data = connection.recv(16384)
-            #print('received "%s"' % data)
             if data:
                 connection.sendall(data)
             else:
+                print('Entra al break')
                 break
-        print("sent everything to", client_address)
     except:
         connection.close()
     finally:
         ThreadCount -= 1
         print('Threads faltantes: ' + str(ThreadCount))
         connection.close()
-
+    
 while True:
     print('waiting for a connection')
     connection, client_address = sock.accept()

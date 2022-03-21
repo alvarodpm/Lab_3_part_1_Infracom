@@ -1,0 +1,2 @@
+2022-03-20 21:35:00,722 - DEBUG - Archivo: file2
+2022-03-20 21:35:00,722 - DEBUG - Peso del archivo: 100MB
